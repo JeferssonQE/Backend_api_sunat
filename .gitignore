@@ -15,7 +15,7 @@ ENV/
 # Logs
 logs/
 *.log
-
+downloads/
 # IDE
 .vscode/
 .idea/
@@ -37,3 +37,7 @@ test_*.json
 
 # Local scripts
 install_chromedriver.py
+
+# markdwon
+DEPLOY_DIGITALOCEAN.md
+INTEGRATION_PROMPT.md

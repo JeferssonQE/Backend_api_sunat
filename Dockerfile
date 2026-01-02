@@ -26,8 +26,8 @@ COPY . .
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
-# Exponer puerto (Railway usa variable $PORT)
-EXPOSE 8000
+# Exponer puerto (Cloud platforms usan variable $PORT)
+EXPOSE 8080
 
-# Comando de inicio (Railway inyecta $PORT automáticamente)
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+# Comando de inicio (DigitalOcean/Railway/Render inyectan $PORT automáticamente)
+CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}

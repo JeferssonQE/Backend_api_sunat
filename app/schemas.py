@@ -37,6 +37,21 @@ class EmisionRequest(BaseModel):
     fecha: str
     id_remitente: str
     credenciales: Credenciales
+    
+    #validaremos la fecha en formato dd/mm/yyyy
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate_fecha
+        
+    @classmethod
+    def validate_fecha(cls, v):
+        if not isinstance(v, str):
+            raise ValueError("La fecha debe ser una cadena de texto")
+        try:
+            datetime.strptime(v, "%d/%m/%Y")
+        except ValueError:
+            raise ValueError("La fecha debe estar en formato dd/mm/yyyy")
+        return v
 
 class TaskResponse(BaseModel):
     task_id: str
@@ -58,3 +73,24 @@ class HealthResponse(BaseModel):
     selenium_ready: bool
     active_tasks: int
     uptime_seconds: Optional[float] = None
+
+class NotaCreditoRequest(BaseModel):
+    fecha_emision: str
+    tipo_nota: str = Field(default="01", pattern="^(01|02|03|04|05)$")
+    numero_boleta: str
+    sustento: str
+    credenciales: Credenciales
+    
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate_fecha
+        
+    @classmethod
+    def validate_fecha(cls, v):
+        if not isinstance(v, str):
+            raise ValueError("La fecha debe ser una cadena de texto")
+        try:
+            datetime.strptime(v, "%d/%m/%Y")
+        except ValueError:
+            raise ValueError("La fecha debe estar en formato dd/mm/yyyy")
+        return v
