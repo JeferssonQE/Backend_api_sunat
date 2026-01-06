@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# FastAPI
+.env
+.env.local
+.env.production
+
+# Logs
+logs/
+*.log
+downloads/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+#MD
+SECURITY_RECOMMENDATIONS.md
+security_check.py
+
+# Selenium
+chromedriver.exe
+chromedriver
+geckodriver
+
+# Testing - IMPORTANTE: No subir datos de prueba con info real
+test_*.py
+test_*.json
+
+# Local scripts
+install_chromedriver.py
+
+# Documentation (si contiene info sensible)
+DEPLOY_DIGITALOCEAN.md
+INTEGRATION_PROMPT.md
+
+# Archivos temporales
+*.tmp
+*.bak
+*.swp
+*~
+
+# Certificados y claves
+*.pem
+*.key
+*.crt
+*.p12
