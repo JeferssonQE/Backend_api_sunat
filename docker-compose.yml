@@ -4,11 +4,26 @@ services:
   api:
     build: .
     ports:
-      - "8000:8000"
+      - "8080:8080"  # Puerto correcto
     environment:
-      - SUNAT_URL=${SUNAT_URL:-https://e-menu.sunat.gob.pe/cl-ti-itmenu/MenuInternet.htm}
+      # Variables de entorno desde .env
+      - APP_NAME=${APP_NAME:-SUNAT Billing API}
+      - VERSION=${VERSION:-1.0.0}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
-      - CHROME_HEADLESS=true
+      - API_HOST=0.0.0.0
+      - API_PORT=8080
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-CAMBIAR_EN_PRODUCCION}
+      - SUNAT_URL=${SUNAT_URL:-https://e-menu.sunat.gob.pe/cl-ti-itmenu/MenuInternet.htm}
+      - CHROME_HEADLESS=true  # Siempre headless en Docker
+      - TASK_TIMEOUT=${TASK_TIMEOUT:-300}
     volumes:
       - ./logs:/app/logs
+      - ./downloads:/app/downloads
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

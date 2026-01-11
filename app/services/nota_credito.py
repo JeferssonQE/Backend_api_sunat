@@ -223,66 +223,16 @@ def send_nota_credito_sunat(data: dict) -> dict:
 
 
 if __name__ == "__main__":
-    """Script de prueba para emitir nota de crédito"""
-    print("=" * 70)
-    print("TEST - Nota de Crédito SUNAT")
-    print("=" * 70)
-    
-    test_data = {
-        "fecha_emision": datetime.now().strftime("%d/%m/%Y"),
-        "tipo_nota": "01",
-        "numero_boleta": "EB01-448",
-        "sustento": "Cliente solicitó anulación de la compra",
+    data = {
         "credenciales": {
-            "ruc": "10090153566",
-            "usuario": "WEEDIOND",
-            "password": "Cesar123"
-        }
+            "ruc": "20602913874",
+            "usuario": "20602913874MODDATOS",
+            "password": "XXXXXXXX"
+        },
+        "numero_boleta": "B001-00000001",
+        "fecha_emision": datetime.now().strftime("%d/%m/%Y"),
+        "sustento": "Prueba de emisión de nota de crédito",
+        "tipo_nota": "01"
     }
-    
-    print("\nDatos de la nota de crédito:")
-    print(f"   Fecha: {test_data['fecha_emision']}")
-    print(f"   Boleta a anular: {test_data['numero_boleta']}")
-    print(f"   Motivo: {test_data['tipo_nota']}")
-    print(f"   Sustento: {test_data['sustento']}")
-    
-    print("\nADVERTENCIA: Esto emitirá una nota de crédito REAL en SUNAT")
-    respuesta = input("¿Deseas continuar? (si/no): ").lower().strip()
-    
-    if respuesta not in ['si', 's', 'yes', 'y']:
-        print("Test cancelado")
-        exit(0)
-    
-    print("\nIniciando emisión...")
-    print("-" * 70)
-    
-    try:
-        resultado = send_nota_credito_sunat(test_data)
-        
-        print("-" * 70)
-        print("\nRESULTADO:")
-        print("=" * 70)
-        
-        if resultado.get("success"):
-            print("ÉXITO - Nota de crédito emitida correctamente")
-            print(f"   Boleta anulada: {resultado.get('numero_boleta')}")
-            print(f"   Fecha: {resultado.get('fecha_emision')}")
-            if resultado.get("pdf"):
-                print(f"   PDF: {resultado['pdf']['filename']}")
-        else:
-            print("ERROR - No se pudo emitir la nota de crédito")
-            print(f"   Error: {resultado.get('error')}")
-        
-        print("=" * 70)
-        
-    except KeyboardInterrupt:
-        print("\n\nProceso interrumpido por el usuario")
-        exit(1)
-    except Exception as e:
-        print(f"\nERROR INESPERADO: {e}")
-        import traceback
-        traceback.print_exc()
-        exit(1)
-    
-    print("\nTest completado")
-
+    result = send_nota_credito_sunat(data)
+    print(result)

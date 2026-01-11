@@ -2,6 +2,7 @@
 import os
 import time
 import base64
+import json
 from datetime import datetime
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -388,10 +389,10 @@ def send_billing_sunat(data: dict) -> dict:
         
         if tipo_documento == "BOLETA":
             emitir_boleta(driver, data)
-            completar_emision(driver, "BOLETA")
+            #completar_emision(driver, "BOLETA")
         elif tipo_documento == "FACTURA":
             emitir_factura(driver, data)
-            completar_emision(driver, "FACTURA")
+            #completar_emision(driver, "FACTURA")
         else:
             raise ValueError(f"Tipo de documento no soportado: {tipo_documento}")
         
@@ -428,44 +429,15 @@ def send_billing_sunat(data: dict) -> dict:
 
 
 if __name__ == "__main__":
-    # ⚠️ NO INCLUIR CREDENCIALES REALES EN EL CÓDIGO
-    # Usar variables de entorno o archivos de configuración externos
-    test_data = {
-        "tipo_documento": "BOLETA",
-        "fecha": datetime.now().strftime("%d/%m/%Y"),
-        "cliente": {
-            "dni": "12345678",
-            "nombre": "Cliente Test"
-        },
-        "productos": [
-            {
-                "cantidad": 2.0,
-                "unidad_medida": "KILOGRAMO",
-                "descripcion": "PRODUCTO TEST",
-                "precio_base": 5.0,
-                "igv": 0,
-                "precio_total": 10.0
-            }
-        ],
-        "resumen": {
-            "serie": "B001",
-            "numero": "00001",
-            "sub_total": 10.0,
-            "igv_total": 0.0,
-            "total": 10.0
-        },
-        "credenciales": {
-            "ruc": os.getenv("TEST_RUC", "10000000000"),
-            "usuario": os.getenv("TEST_USUARIO", "TESTUSER"),
-            "password": os.getenv("TEST_PASSWORD", "test123")
-        }
-    }
 
-    result = send_billing_sunat(test_data)
-    logger.info(f"Resultado: {result}")
+    with open("./test_boleta.json", "r") as f:
+        test_data = json.load(f)
 
-    if result.get("success") and result.get("pdf"):
-        pdf_bytes = base64.b64decode(result["pdf"]["content"])
-        with open("./comprobante.pdf", "wb") as f:
-            f.write(pdf_bytes)
-            logger.info("PDF guardado en ./comprobante.pdf")
+        result = send_billing_sunat(test_data)
+        logger.info(f"Resultado: {result}")
+
+        if result.get("success") and result.get("pdf"):
+            pdf_bytes = base64.b64decode(result["pdf"]["content"])
+            with open("./comprobante.pdf", "wb") as f:
+                f.write(pdf_bytes)
+                logger.info("PDF guardado en ./comprobante.pdf")

@@ -24,19 +24,23 @@ class Resumen(BaseModel):
     igv_total: float = Field(ge=0)
     total: float = Field(ge=0)
 
-class Credenciales(BaseModel):
-    ruc: str
-    usuario: str
-    password: str
+class CredencialesEncriptadas(BaseModel):
+    """Credenciales SUNAT encriptadas desde el frontend (REQUERIDO)"""
+    ruc_encrypted: str
+    usuario_encrypted: str
+    password_encrypted: str
 
 class EmisionRequest(BaseModel):
+    """Request para emitir un comprobante"""
     tipo_documento: str = Field(pattern="^(BOLETA|FACTURA)$")
     cliente: Cliente
     productos: List[Producto]
     resumen: Resumen
     fecha: str
     id_remitente: str
-    credenciales: Credenciales
+    
+    # SOLO credenciales encriptadas 
+    credenciales_encrypted: CredencialesEncriptadas
     
     #validaremos la fecha en formato dd/mm/yyyy
     @classmethod
@@ -52,6 +56,29 @@ class EmisionRequest(BaseModel):
         except ValueError:
             raise ValueError("La fecha debe estar en formato dd/mm/yyyy")
         return v
+    
+    @classmethod
+    def model_validate(cls, obj):
+        """Validación completa con reglas de negocio"""
+        instance = super().model_validate(obj)
+        
+        # Validar totales
+        total_calculado = sum(p.precio_total for p in instance.productos)
+        if abs(total_calculado - instance.resumen.total) > 0.01:
+            raise ValueError(
+                f"Total no coincide: calculado {total_calculado} "
+                f"vs declarado {instance.resumen.total}"
+            )
+        
+        # Validar cliente según tipo de documento
+        if instance.tipo_documento == "BOLETA":
+            if not instance.cliente.dni and not instance.cliente.nombre:
+                raise ValueError("Boleta requiere DNI o nombre del cliente")
+        elif instance.tipo_documento == "FACTURA":
+            if not instance.cliente.ruc:
+                raise ValueError("Factura requiere RUC del cliente")
+        
+        return instance
 
 class TaskResponse(BaseModel):
     task_id: str
@@ -75,11 +102,14 @@ class HealthResponse(BaseModel):
     uptime_seconds: Optional[float] = None
 
 class NotaCreditoRequest(BaseModel):
+    """Request para emitir una nota de crédito"""
     fecha_emision: str
     tipo_nota: str = Field(default="01", pattern="^(01|02|03|04|05)$")
     numero_boleta: str
     sustento: str
-    credenciales: Credenciales
+    
+    # SOLO credenciales encriptadas (más seguro)
+    credenciales_encrypted: CredencialesEncriptadas
     
     @classmethod
     def __get_validators__(cls):
