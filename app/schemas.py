@@ -7,7 +7,6 @@ class Cliente(BaseModel):
     nombre: Optional[str] = None
     dni: Optional[str] = None
     ruc: Optional[str] = None
-    telefono: Optional[str] = None
 
 class Producto(BaseModel):
     cantidad: float = Field(gt=0)
@@ -24,23 +23,23 @@ class Resumen(BaseModel):
     igv_total: float = Field(ge=0)
     total: float = Field(ge=0)
 
-class CredencialesEncriptadas(BaseModel):
-    """Credenciales SUNAT encriptadas desde el frontend (REQUERIDO)"""
-    ruc_encrypted: str
-    usuario_encrypted: str
-    password_encrypted: str
+class CredencialesPlanas(BaseModel):
+    """Credenciales SUNAT en plano (ya desencriptadas por backend-factura-movil)"""
+    ruc: str
+    sunat_user: str
+    sunat_pass: str
+
 
 class EmisionRequest(BaseModel):
-    """Request para emitir un comprobante"""
+    """Request para emitir un comprobante con credenciales desencriptadas"""
     tipo_documento: str = Field(pattern="^(BOLETA|FACTURA)$")
     cliente: Cliente
     productos: List[Producto]
     resumen: Resumen
     fecha: str
-    id_remitente: str
     
-    # SOLO credenciales encriptadas 
-    credenciales_encrypted: CredencialesEncriptadas
+    # Credenciales ya desencriptadas desde backend-factura-movil
+    credenciales: CredencialesPlanas
     
     #validaremos la fecha en formato dd/mm/yyyy
     @classmethod
@@ -93,6 +92,9 @@ class StatusResponse(BaseModel):
     started_at: Optional[str] = None
     completed_at: Optional[str] = None
     duration_seconds: Optional[float] = None
+    message: Optional[str] = None
+    pdf_base64: Optional[str] = None
+    sunat_response: Optional[dict] = None
 
 class HealthResponse(BaseModel):
     status: str
@@ -108,8 +110,7 @@ class NotaCreditoRequest(BaseModel):
     numero_boleta: str
     sustento: str
     
-    # SOLO credenciales encriptadas (más seguro)
-    credenciales_encrypted: CredencialesEncriptadas
+    credenciales: CredencialesPlanas
     
     @classmethod
     def __get_validators__(cls):
@@ -124,3 +125,24 @@ class NotaCreditoRequest(BaseModel):
         except ValueError:
             raise ValueError("La fecha debe estar en formato dd/mm/yyyy")
         return v
+
+
+# Schemas para API bonita separada
+class InvoiceDataSeparated(BaseModel):
+    """Datos del comprobante separados de credenciales"""
+    tipo_documento: str = Field(pattern="^(BOLETA|FACTURA)$")
+    cliente: Cliente
+    productos: List[Producto]
+    resumen: Resumen
+    fecha: str
+
+class SenderCredentialsSeparated(BaseModel):
+    """Credenciales del emisor separadas"""
+    ruc: str
+    sunat_user: str
+    sunat_pass: str
+
+class EmisionRequestSeparated(BaseModel):
+    """Request bonito con invoice y sender separados"""
+    invoice: InvoiceDataSeparated
+    sender: SenderCredentialsSeparated

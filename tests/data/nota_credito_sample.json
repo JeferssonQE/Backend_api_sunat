@@ -1,0 +1,11 @@
+{
+  "fecha_emision": "01/01/2026",
+  "tipo_nota": "01",
+  "numero_boleta": "EB01-448",
+  "sustento": "Cliente solicitó anulación de la compra",
+  "credenciales": {
+    "ruc": "10090153566",
+    "usuario": "WEEDIOND",
+    "password": "Cesar123"
+  }
+}

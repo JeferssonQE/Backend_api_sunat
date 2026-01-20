@@ -1,10 +1,23 @@
 version: '3.8'
 
 services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   api:
     build: .
     ports:
-      - "8080:8080"  # Puerto correcto
+      - "8080:8080"
     environment:
       # Variables de entorno desde .env
       - APP_NAME=${APP_NAME:-SUNAT Billing API}
@@ -17,9 +30,18 @@ services:
       - SUNAT_URL=${SUNAT_URL:-https://e-menu.sunat.gob.pe/cl-ti-itmenu/MenuInternet.htm}
       - CHROME_HEADLESS=true  # Siempre headless en Docker
       - TASK_TIMEOUT=${TASK_TIMEOUT:-300}
+      # Redis configuration
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - MAX_WORKERS=${MAX_WORKERS:-2}
+      - WORKER_TIMEOUT=${WORKER_TIMEOUT:-300}
     volumes:
       - ./logs:/app/logs
       - ./downloads:/app/downloads
+    depends_on:
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/health"]
@@ -27,3 +49,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+
+volumes:
+  redis_data:

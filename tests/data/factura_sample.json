@@ -1,0 +1,33 @@
+{
+  "tipo_documento": "BOLETA",
+  "cliente": {
+    "nombre": "JUAN PEREZ",
+    "dni": null,
+    "ruc": null,
+    "telefono": "987654321"
+  },
+  "productos": [
+    {
+      "cantidad": 2.0,
+      "descripcion": "ARROZ SUPERIOR",
+      "unidad_medida": "KILOGRAMO",
+      "precio_base": 3.5,
+      "igv": 0,
+      "precio_total": 7.0
+    }
+  ],
+  "resumen": {
+    "serie": "B001",
+    "numero": "00123",
+    "sub_total": 7.0,
+    "igv_total": 0.0,
+    "total": 7.0
+  },
+  "fecha": "30/12/2024",
+  "id_remitente": "5",
+  "credenciales": {
+    "ruc": "xd",
+    "usuario": "xd",
+    "password": "xd"
+  }
+}

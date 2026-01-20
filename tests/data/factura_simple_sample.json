@@ -1,0 +1,30 @@
+{
+  "tipo_documento": "FACTURA",
+  "fecha": "03/01/2026",
+  "cliente": {
+    "ruc": "10752769805"
+  },
+  "productos": [
+    {
+      "cantidad": 5.0,
+      "unidad_medida": "UNIDAD",
+      "descripcion": "LAPICEROS AZULES",
+      "precio_base": 1.5,
+      "igv": 18,
+      "precio_total": 8.85
+    }
+  ],
+  "resumen": {
+    "serie": "F001",
+    "numero": "00001",
+    "sub_total": 7.5,
+    "igv_total": 1.35,
+    "total": 8.85
+  },
+  "id_remitente": "cliente-001",
+  "credenciales": {
+    "ruc": "10090153566",
+    "usuario": "WEEDIOND",
+    "password": "Cesar123"
+  }
+}

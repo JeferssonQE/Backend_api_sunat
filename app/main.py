@@ -1,27 +1,48 @@
-"""Punto de entrada FastAPI"""
+"""Punto de entrada FastAPI - Backend SUNAT Emisión"""
 import time
+import asyncio
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.schemas import HealthResponse
 from app.utils.logger import logger
-from app.utils.task_storage import TemporaryTaskStorage
-from app.services.task_processor import TaskProcessor
-from app.api.emission_routes import router as emission_router, init_emission_routes
+from app.services.worker_manager import worker_manager
+from app.services.driver_semaphore import driver_semaphore
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Gestor del ciclo de vida de la aplicación"""
+    # Startup
+    logger.info("🚀 Iniciando Backend SUNAT Emisión...")
+    
+    try:
+        # Inicializar workers (no necesitamos inicializar pool)
+        await worker_manager.start()
+        
+        logger.info("✅ Backend SUNAT listo para emisiones")
+        
+        yield  # La aplicación corre aquí
+        
+    finally:
+        # Shutdown RÁPIDO - solo workers
+        logger.info("🛑 Cerrando Backend SUNAT...")
+        
+        # Solo detener workers
+        await worker_manager.stop()
+        
+        logger.info("✅ Backend SUNAT cerrado correctamente")
 
 
 def create_app() -> FastAPI:
-    """
-    Factory para crear la aplicación FastAPI.
-    
-    Returns:
-        Instancia configurada de FastAPI
-    """
+    """Factory para crear la aplicación FastAPI"""
     app = FastAPI(
-        title=settings.app_name,
-        description="API REST para emisión de comprobantes en SUNAT",
-        version=settings.version
+        title="Backend SUNAT Emisión",
+        description="Microservicio especializado en emisión de comprobantes SUNAT",
+        version=settings.version,
+        lifespan=lifespan
     )
     
     # Configurar CORS
@@ -41,14 +62,9 @@ def create_app() -> FastAPI:
 # Crear aplicación
 app = create_app()
 
-# Inicializar dependencias
-tasks_storage = TemporaryTaskStorage(max_size=100, max_age_hours=1)
-task_processor = TaskProcessor(tasks_storage)
+# Solo rutas de emisión
+from app.api.emission_routes import router as emission_router
 
-# Inicializar rutas con dependencias
-init_emission_routes(tasks_storage, task_processor)
-
-# Registrar routers
 app.include_router(emission_router)
 
 # Tiempo de inicio del servidor
@@ -59,26 +75,33 @@ start_time = time.time()
 async def root():
     """Endpoint raíz"""
     return {
-        "message": settings.app_name,
+        "message": "Backend SUNAT Emisión",
         "version": settings.version,
+        "service": "emission-only",
         "docs": "/docs"
     }
 
 
-@app.get("/api/v1/health", response_model=HealthResponse)
+@app.get("/health", response_model=HealthResponse)
 async def health_check():
     """Health check del servicio"""
-    all_tasks = tasks_storage.get_all_tasks()
-    active_tasks = len([t for t in all_tasks if t.get("status") == "processing"])
+    worker_status = await worker_manager.get_status()
     uptime = time.time() - start_time
     
     return HealthResponse(
         status="healthy",
         version=settings.version,
-        selenium_ready=True,
-        active_tasks=active_tasks,
+        selenium_ready=True,  # Siempre listo (no pool)
+        active_tasks=worker_status["queue"]["processing"],
         uptime_seconds=uptime
     )
+
+
+@app.get("/status", tags=["monitoring"])
+async def system_status():
+    """Estado detallado del sistema"""
+    return await worker_manager.get_status()
+
 
 if __name__ == "__main__":
     import uvicorn

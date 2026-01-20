@@ -36,7 +36,7 @@ cp .env.example .env
 # Editar .env con tus configuraciones
 
 # Iniciar servidor
-uvicorn app.main:app --reload --port 8000
+python run.py
 ```
 
 ## Instalación con Docker
@@ -93,23 +93,54 @@ Una vez iniciado el servidor, accede a:
 
 ```
 backend-sunat/
-├── app/
-│   ├── __init__.py
-│   ├── main.py              # Punto de entrada FastAPI
-│   ├── config.py            # Configuración
-│   ├── schemas.py           # Schemas Pydantic
-│   ├── services/
-│   │   ├── __init__.py
-│   │   └── scraper_service.py  # Lógica de scraping
-│   └── utils/
-│       ├── __init__.py
-│       ├── logger.py        # Configuración de logs
-│       └── selenium_utils.py   # Helpers de Selenium
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-├── .env.example
-└── README.md
+├── app/                     # Aplicación principal
+│   ├── main.py             # Punto de entrada FastAPI
+│   ├── config.py           # Configuración
+│   ├── schemas.py          # Schemas Pydantic
+│   ├── api/                # Endpoints REST
+│   │   ├── emission_secure_routes.py
+│   │   └── sender_routes.py
+│   ├── services/           # Lógica de negocio
+│   │   ├── scraper_service.py      # Scraping SUNAT (boletas, facturas, notas de crédito)
+│   │   ├── driver_manager.py       # Pool de drivers Selenium
+│   │   ├── worker_manager.py       # Gestión de workers
+│   │   ├── queue_manager.py        # Cola Redis
+│   │   ├── task_processor.py       # Procesamiento de tareas
+│   │   ├── auth_service.py         # Autenticación
+│   │   ├── credential_service.py   # Manejo de credenciales
+│   │   └── sender_service.py       # Lógica de emisores
+│   └── utils/              # Utilidades
+│       ├── logger.py       # Sistema de logging
+│       ├── encryption.py   # Cifrado de credenciales
+│       ├── selenium_utils.py       # Helpers Selenium
+│       ├── redis_client.py         # Cliente Redis
+│       ├── supabase_client.py      # Cliente Supabase
+│       └── task_storage.py         # Almacenamiento de tareas
+├── tests/                  # Tests organizados
+│   ├── unit/              # Tests unitarios
+│   ├── integration/       # Tests de integración
+│   ├── use_cases/         # Tests de casos de uso
+│   ├── data/              # Datos de prueba
+│   │   ├── boleta_sample.json
+│   │   ├── factura_sample.json
+│   │   └── nota_credito_sample.json
+│   ├── conftest.py        # Configuración pytest
+│   └── run_tests.py       # Runner de tests
+├── scripts/               # Scripts utilitarios
+│   ├── generate_test_token.py
+│   ├── security_check.py
+│   ├── load_test.py
+│   └── install_chromedriver.py
+├── docs/                  # Documentación
+│   ├── API_GUIDE.md
+│   ├── INTEGRATION_PROMPT.md
+│   └── FRONTEND_ENCRYPTION_INTEGRATION.md
+├── run.py                 # Script de inicio
+├── requirements.txt       # Dependencias
+├── Dockerfile            # Contenedor Docker
+├── docker-compose.yml    # Orquestación
+├── .env.example          # Template de configuración
+└── README.md             # Este archivo
 ```
 
 ## Estados de Tareas
